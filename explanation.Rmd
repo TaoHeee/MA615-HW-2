@@ -1,0 +1,246 @@
+---
+title: "explanation"
+date: "September 21, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load("bayesplot","knitr","arm","ggplot2","rstanarm","loo","tidyverse",
+               "tidyr","dplyr")
+```
+
+### MA615 FALL 2021
+
+### HW#2
+
+  - Wrangling
+  - Visualization
+  
+#### Wrangling
+
+This is the first part of this homework, called wrangling.
+The data sets are from the Gapminder website (https://www.gapminder.org/data/).
+Pick two individual indicators and download each of their data sets into .cvs 
+data files. Then, wrangle these two data files into one tibble that is "tidy".
+
+I choose the adult literacy rate and adult employment rate to find the 
+relationship between this two indicators. 
+
+Literacy: Adult literacy rate is the percentage of people ages 15 and above who can, 
+with understanding, read and write a short, simple statement on their 
+everyday life.
+
+Employment: Percentage of total population, age group 15+, that has been employed 
+during the given year.
+
+ 
+##### Import datasets
+
+```{r}
+## upload two individual indicators
+
+Literacy_org <- read.csv("/Users/odd/Desktop/FALL2021/MA615/MA615-HW-2/data/literacy_rate_adult_total_percent_of_people_ages_15_and_above.csv", header = T)
+
+employment_org <- read.csv("/Users/odd/Desktop/FALL2021/MA615/MA615-HW-2/data/aged_15plus_employment_rate_percent.csv", header = T)
+```
+
+```{r}
+## select the adult literacy rate and adult employment rate
+Literacy1 <- Literacy_org[, c(1,28)]
+sum(is.na(Literacy1$X2000))       # see how many NAs are on the dataset
+
+Literacy_final <- na.omit(Literacy1)
+Literacy_final$literacy <- Literacy_final$X2000
+# list the literacy rate in 2000 for each country
+
+literacy <- Literacy_final[, c(1,3)]    # divide 
+head(literacy)      # look the first 6 rows of the data frame
+
+
+employment_final <- employment_org[, c(1,12)]
+sum(is.na(employment_final$X2000))       # see how many NAs are on the dataset
+
+employment_final$employment <- employment_final$X2000
+# list the employment rate in 2000 for each country
+
+Employment <- employment_final[, c(1,3)]
+head(Employment)       # look the first 6 rows of the data frame
+
+```
+
+
+##### Create tibbles
+```{r}
+## create tibbles
+as_tibble(literacy)
+as_tibble(Employment)
+```
+
+
+##### Combine two tibbles
+```{r}
+## combine two tibbles
+trend_org <- left_join(literacy, Employment)
+trend <- na.omit(trend_org)
+trend       # look at the tibble "trend"
+```
+
+
+
+
+#### Creating plot
+
+Before we do the visualization, we can guess whether the higher the adult 
+literacy rate is, the higher the adult employment rate will be.
+Since the majority of jobs require people understanding, read and write a 
+short, simple statement, which is the basic requirement, this guess is reasonable.
+
+Now, Create a ggplot visualization of this data.
+
+```{r}
+# library packages
+library(ggplot2)
+library(tidyverse)
+library(gapminder)
+
+# library(printr) 
+library(RColorBrewer) ## to chose different colors for the graph
+```
+
+##### ggplot
+
+Let’s turn this code into a reusable template for making graphs with ggplot2. 
+ggplot(data = <DATA>) +
+  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+
+```{r}
+## To plot trend, run this code to put literacy on the x-axis and 
+## Employment on the y-axis
+ggplot(data = trend) +
+  geom_point(mapping = aes(x = literacy, y = employment))
+## The plot shows a positive relationship between literacy rate (literacy) and 
+## employment rate (employment) with each country. In other words, high literacy 
+## rate leads high employment rate.
+```
+```{r}
+ggplot(data = trend) +
+  geom_point(mapping = aes(x = literacy, y = employment, color = country))
+## map the colors of points to the class variable to reveal the relationship 
+## between literacy rate (literacy) and employment rate (employment) 
+## for each country.
+```
+```{r}
+## exploring continuous variales  -- distributions
+ggplot(data=trend, aes(x=literacy)) + 
+  geom_density()
+
+ggplot(data=trend, aes(x=literacy)) + 
+  geom_density(size=1.5, fill="pink", alpha=0.3)
+
+ggplot(data=trend, aes(x=literacy)) + 
+  geom_density(size=1.5, fill="pink", alpha=0.5) +
+  geom_histogram(aes(y=..density..), binwidth=4, color="black", fill="lightblue", alpha=0.5)
+
+geom_histogram(aes(y=..density..), binwidth=4, color="black", fill="lightblue", alpha=0.5)
+## In the majority of those countries, the employment rate has a positive 
+## relationship with the literacy rate. We should consider that the first 
+## requirment to get a job is recognize the words.
+```
+```{r}
+##  using layers
+
+plt <- ggplot(data=trend,
+              aes(x=literacy, y=employment))
+plt
+
+plt + geom_point()
+
+plt + geom_point(aes(color=country))
+
+plt + geom_point(mapping = aes(color=country)) +
+  geom_smooth(method="loess")
+
+plt + geom_point(aes(color=country)) +
+  geom_smooth(mapping = aes(x=literacy, y=employment), method="loess") +
+  scale_x_log10()
+## use these mappings to extend or overwrite the global mappings
+```
+
+##### World Map
+
+```{r, error=FALSE}
+## Loading required package: sp
+library(sp)
+library(lattice)
+library(survival)
+library(Formula)
+
+library(dplyr)
+library(rworldmap) ## plotting the data on World Map
+library(countrycode) ## Converting the country name to Country code
+library(Hmisc)
+```
+
+```{r}
+## view trend
+dim(trend)
+
+colnames(trend)
+
+sum(complete.cases(trend)) ## No missing values found
+
+describe(trend)  ## see Hmisc
+```
+
+```{r}
+trend$countrycode <- countrycode(trend$country, 'country.name', 'iso3c')
+
+sPDF <- joinCountryData2Map(trend 
+                            ,joinCode = "ISO3"
+                            ,nameJoinColumn = "countrycode"
+                            ,suggestForFailedCodes = FALSE
+                            , verbose = T)
+
+```
+
+```{r}
+## Finally, we build the "literacy rate" map over the 29 countries.
+colourPalette <- brewer.pal(7,'GnBu')
+
+mapParams <- mapCountryData(sPDF,
+                            nameColumnToPlot="literacy",
+                            addLegend=FALSE,
+                            colourPalette=colourPalette )
+
+## draw a color standard line to displays the literacy rate values 
+## corresponding to different colors 
+
+do.call(addMapLegend
+        ,c(mapParams
+           ,legendLabels="all"
+           ,legendWidth=0.5
+           ,legendIntervals="data"
+           ,legendMar = 2))
+```
+
+```{r}
+## Finally, we build the "employment rate" map over the 29 countries.
+colourPalette <- brewer.pal(7,'GnBu')
+
+mapParams1 <- mapCountryData(sPDF,
+                            nameColumnToPlot="employment",
+                            addLegend=FALSE,
+                            colourPalette=colourPalette )
+
+## draw a color standard line to displays the employment rate values 
+## corresponding to different colors 
+do.call(addMapLegend
+        ,c(mapParams1
+           ,legendLabels="all"
+           ,legendWidth=0.5
+           ,legendIntervals="data"
+           ,legendMar = 2))
+
+```
+
