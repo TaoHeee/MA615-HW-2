@@ -155,8 +155,8 @@ library(countrycode)
 library(Hmisc)
 
 # Next time try to use "read_csv", "read_csv" is under tidyverse, using this function can easily tidy into tibble form, for instance: 
-Literacy_org <- read.csv("data/literacy_rate_adult_total_percent_of_people_ages_15_and_above.csv", header = T)
-employment_org <- read.csv("data/aged_15plus_employment_rate_percent.csv", header = T)
+# Literacy_org <- read_csv("data/literacy_rate_adult_total_percent_of_people_ages_15_and_above.csv")
+# employment_org <- read_csv("data/aged_15plus_employment_rate_percent.csv")
 
 # I will create a function for you to use for the presentation. 
 
@@ -228,7 +228,7 @@ plt_fuc <- function(type, `type number`, title) {
 # debugging the function: 
 plt_fuc(type = "map", title = "liter")
 
-# Last thing I would like to mentioned, you can add the title for your legend, it might help other peopel to understand what it is that for. 
+# Last thing I would like to mention, you can add the title for your legend, it might help other peopel to understand what it is that for. 
 
 
 
