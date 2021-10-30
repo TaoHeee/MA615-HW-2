@@ -187,15 +187,15 @@ plt_fuc <- function(type, `type number`, title) {
       stop("Warning: Type number does not exist")  #make sure remind if you type the wrong type number
     }
   } else if (type == "map") {
+    trend$countrycode <- countrycode(trend$country, 'country.name', 'iso3c')
+    sPDF <- joinCountryData2Map(trend 
+                                ,joinCode = "ISO3"
+                                ,nameJoinColumn = "countrycode"
+                                ,suggestForFailedCodes = FALSE
+                                , verbose = T)
+    colourPalette <- brewer.pal(7,'GnBu')
    # indicate the title condition:
      if (title == "liter") {
-      trend$countrycode <- countrycode(trend$country, 'country.name', 'iso3c')
-      sPDF <- joinCountryData2Map(trend 
-                                  ,joinCode = "ISO3"
-                                  ,nameJoinColumn = "countrycode"
-                                  ,suggestForFailedCodes = FALSE
-                                  , verbose = T)
-      colourPalette <- brewer.pal(7,'GnBu')
       mapParams <- mapCountryData(sPDF,
                                   nameColumnToPlot="literacy",
                                   addLegend=FALSE,
@@ -226,7 +226,7 @@ plt_fuc <- function(type, `type number`, title) {
 }
 
 # debugging the function: 
-plt_fuc(type = "map", title = "liter")
+plt_fuc(type = "map", title = "employ")
 
 # Last thing I would like to mention, you can add the title for your legend, it might help other peopel to understand what it is that for. 
 
