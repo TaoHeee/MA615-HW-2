@@ -174,6 +174,7 @@ plt_fuc <- function(type, `type number`, title) {
   
    # type condition: explor or map and type number
   if (type == "explor") {
+    # Condition for plot: either histogram or scatterplot
     if (`type number` == 1) {
       ggplot(data=trend, aes(x=literacy)) + 
         geom_density(size=1.5, fill="pink", alpha=0.5) +
@@ -184,7 +185,7 @@ plt_fuc <- function(type, `type number`, title) {
         geom_smooth(mapping = aes(x=literacy, y=employment), method="loess") +
         scale_x_log10()
     } else if (`type number` >= 3) {
-      stop("Warning: Type number does not exist")  #make sure remind if you type the wrong type number
+      stop("Warning: Type number does not exist")  # make sure remind if you type the wrong type number
     }
   } else if (type == "map") {
     trend$countrycode <- countrycode(trend$country, 'country.name', 'iso3c')
@@ -218,15 +219,15 @@ plt_fuc <- function(type, `type number`, title) {
                  ,legendWidth=0.5
                  ,legendIntervals="data"
                  ,legendMar = 2))
-     } else if (title != c("empply", "liter")) {
-       stop("Warning: Incorrect title.") #same as type number condition
+     } else if (title != c("employ", "liter")) {
+       stop("Warning: Title does not exist.") # Same as type number condition
      }
   } else {stop("Warning: Please ensure you input the correct type, type number and title.\
-               Type: explor|map; Type number: 1|2; Title: liter|empoly.")}
+               Type: 'explor'|'map'; Type number: 1|2; Title: 'liter'|'empoly'.")}
 }
 
 # debugging the function: 
-plt_fuc(type = "map", title = "employ")
+plt_fuc(type = "map", title = "liter")
 
 # Last thing I would like to mention, you can add the title for your legend, it might help other peopel to understand what it is that for. 
 
